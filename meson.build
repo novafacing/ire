@@ -1,21 +1,33 @@
 # Meson build file for building pcode-rs C++ dependencies
 
-project('pcode-rs', 'cpp')
+project('pcode-rs', 'cpp', default_options: ['cpp_std=c++11'])
 
+
+# Imports and dependencies
 fs = import('fs')
 
+flex = find_program('flex', required: true)
+bison = find_program('bison', required: true)
+
+libbfd = meson.get_compiler('cpp').find_library('bfd')
+
+# Locations and definitions
+install_path = meson.project_source_root() / get_option('install_dir')
+
 ghidra_decompile_cpp_dir = './ghidra/Ghidra/Features/Decompiler/src/decompile/cpp'
+ghidra_processors_dir = './ghidra/Ghidra/Processors'
+
+# Sanity checks
 
 if not fs.is_dir(ghidra_decompile_cpp_dir)
   error('Ghidra decompile C++ directory not found. Run `git submodule update --init --recursive` to fetch it.')
 endif
 
-libbfd = meson.get_compiler('cpp').find_library('bfd')
+if not fs.is_dir(ghidra_processors_dir)
+  error('Ghidra processors directory not found. Run `git submodule update --init --recursive` to fetch it.')
+endif
 
-# Generated Sources - Scanner & Lexer Files
-
-flex = find_program('flex', required: true)
-bison = find_program('bison', required: true)
+# Generated sources for sleigh and libraries
 
 grammar_cc = custom_target(
     'grammar_cc',
@@ -68,7 +80,8 @@ slghscan_cc = custom_target(
     'slghscan_cc',
     output: 'slghscan.cc',
     input: ghidra_decompile_cpp_dir / 'slghscan.l',
-    command: [flex, '-o', '@OUTPUT@', '@INPUT@']
+    command: [flex, '-o', '@OUTPUT@', '@INPUT@'],
+    depends: [slghparse_cc_hh]
 )
 
 generated_sources = declare_dependency(
@@ -85,6 +98,8 @@ generated_sources = declare_dependency(
 )
 
 # End generated sources
+
+# Source code for sleigh and libraries
 
 ghidra_inc = include_directories(ghidra_decompile_cpp_dir)
 
@@ -233,18 +248,100 @@ libsla_src = [
 sleigh = executable(
     'sleigh',
     core_src + sleigh_src + sleigh_compiler_src,
-    include_directories: [ghidra_decompile_cpp_dir]
+    cpp_args: ['-Wno-sign-compare'],
+    include_directories: [ghidra_decompile_cpp_dir],
+    install_dir: install_path / 'bin',
+    install: true,
 )
 
 libsleigh = library(
     'sleigh',
     core_src + sleigh_src + libsla_src,
-    include_directories: [ghidra_decompile_cpp_dir]
+    cpp_args: ['-Wno-sign-compare'],
+    include_directories: [ghidra_decompile_cpp_dir],
+    install_dir: install_path / 'lib',
+    install: true,
 )
 
 libdecomp = library(
     'decomp',
     core_src + dec_core_src + extra_src + sleigh_src,
+    cpp_args: ['-Wno-sign-compare'],
     include_directories: [ghidra_decompile_cpp_dir],
-    dependencies: libbfd
+    dependencies: libbfd,
+    install_dir: install_path / 'lib',
+    install: true,
 )
+
+# Sleigh compilation steps
+
+sleigh_processors = {
+    '6502': {
+        '6502.sla': ['6502.slaspec', '6502.cspec', '6502.ldefs', '6502.pspec'],
+        '65c02.sla': ['65c02.slaspec', '6502.slaspec', '6502.cspec', '6502.ldefs', '6502.pspec'],
+    },
+    '68000': {},
+    '8048': {},
+    '8051': {},
+    '8085': {},
+    'AARCH64': {},
+    'ARM': {},
+    'Atmel': {},
+    'CP1600': {},
+    'CR16': {},
+    'Dalvik': {},
+    'DATA': {},
+    'HCS08': {},
+    'HCS12': {},
+    'JVM': {},
+    'M8C': {},
+    'MC6800': {},
+    'MCS96': {},
+    'MIPS': {},
+    'PA-RISC': {},
+    'PIC': {},
+    'PowerPC': {},
+    'RISCV': {},
+    'Sparc': {},
+    'SuperH': {},
+    'SuperH4': {},
+    'TI_MSP430': {},
+    'Toy': {},
+    'tricore': {},
+    'V850': {},
+    'x86': {},
+    'Z80': {},
+}
+
+sleigh_input_files = {}
+foreach sleigh_processor, sleigh_languages : sleigh_processors
+    processor_dir = ghidra_processors_dir / sleigh_processor / 'data' / 'languages'
+    install_dir = install_path / 'share' / 'sleigh' / sleigh_processor
+    foreach sleigh_language, sleigh_language_srcs : sleigh_languages
+        language_deps = []
+        foreach language_srcfile : sleigh_language_srcs
+            if sleigh_input_files.has_key(language_srcfile)
+                language_deps += sleigh_input_files.get(language_srcfile)
+            else
+                sleigh_input_file = configure_file(
+                    input: processor_dir / language_srcfile,
+                    output: language_srcfile,
+                    copy: true,
+                    install_dir: install_dir,
+                    install: true
+                )
+                sleigh_input_files += {language_srcfile: sleigh_input_file}
+                language_deps += sleigh_input_file
+            endif
+        endforeach
+
+        sleigh_language_target = custom_target(
+            sleigh_language,
+            output: sleigh_language,
+            input: language_deps,
+            command: [sleigh, language_deps[0]],
+            install_dir: install_dir,
+            install: true,
+        )
+    endforeach
+endforeach

@@ -1,0 +1,6 @@
+option(
+    'install_dir',
+    type: 'string',
+    value: 'output',
+    description: 'Path to install built challenges into. Defaults to the ./output in the project root.'
+)
