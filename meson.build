@@ -273,7 +273,10 @@ libdecomp = library(
     install: true,
 )
 
-# Sleigh compilation steps
+###############################AUTOMATICALLY GENERATED##################################
+# You can re-generate this section of the script by running the following command:  #
+# python3 scripts/generate_meson_sleigh.py                                     #
+########################################################################################
 
 sleigh_processor_sources = {
     'MIPS': [
@@ -1327,7 +1330,7 @@ sleigh_processor_specs = {
     },
 }
 
-
+###################################END AUTOMATICALLY GENERATED##########################
 
 sleigh_input_files = {}
 foreach sleigh_processor, sleigh_languages : sleigh_processor_specs
