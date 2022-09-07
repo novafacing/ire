@@ -10,28 +10,81 @@ if not fs.is_dir(ghidra_decompile_cpp_dir)
   error('Ghidra decompile C++ directory not found. Run `git submodule update --init --recursive` to fetch it.')
 endif
 
-ghidra_inc = include_directories(ghidra_decompile_cpp_dir)
+# Generated Sources - Scanner & Lexer Files
 
 flex = find_program('flex', required: true)
 bison = find_program('bison', required: true)
 
-lex = generator(flex,
-    output: '@PLAINNAME@.cc',
-    arguments: ['-o', '@OUTPUT@', '@INPUT@']
+grammar_cc = custom_target(
+    'grammar_cc',
+    output: 'grammar.cc',
+    input: ghidra_decompile_cpp_dir / 'grammar.y',
+    command: [bison, '-p', 'cparse', '-o' , 'grammar.cc', '@INPUT@']
 )
 
-yacc = generator(bison,
-    output: '@PLAINNAME@.cc',
-    arguments: ['-o', '@OUTPUT@', '@INPUT@']
+xml_cc = custom_target(
+    'xml_cc',
+    output: 'xml.cc',
+    input: ghidra_decompile_cpp_dir / 'xml.y',
+    command: [bison, '-p', 'xml', '-o' , 'xml.cc', '@INPUT@']
+)
+pcodeparse_cc = custom_target(
+    'pcodeparse_cc',
+    output: 'pcodeparse.cc',
+    input: ghidra_decompile_cpp_dir / 'pcodeparse.y',
+    command: [bison, '-p', 'pcode', '-o' , 'pcodeparse.cc', '@INPUT@']
+)
+slghparse_cc_hh = custom_target(
+    'slghparse_cc_hh',
+    output: [
+        'slghparse.cc',
+        'slghparse.hh'
+    ],
+    input: ghidra_decompile_cpp_dir / 'slghparse.y',
+    command: [bison, '-d', '-o' , 'slghparse.cc', '@INPUT@']
+)
+# 0 is the CC file, 1 is the HH file
+# meson generates them as an array if there are multiple outputs
+slghparse_cc = slghparse_cc_hh[0]
+slghparse_hh = slghparse_cc_hh[1]
+
+ruleparse_cc_hh = custom_target(
+    'ruleparse_cc_hh',
+    output: [
+        'ruleparse.cc',
+        'ruleparse.hh'
+    ],
+    input: ghidra_decompile_cpp_dir / 'ruleparse.y',
+    command: [bison, '-p', 'ruleparse', '-d' , '-o' , 'ruleparse.cc', '@INPUT@']
+)
+# 0 is the CC file, 1 is the HH file
+# meson generates them as an array if there are multiple outputs
+ruleparse_cc = ruleparse_cc_hh[0]
+ruleparse_hh = ruleparse_cc_hh[1]
+
+slghscan_cc = custom_target(
+    'slghscan_cc',
+    output: 'slghscan.cc',
+    input: ghidra_decompile_cpp_dir / 'slghscan.l',
+    command: [flex, '-o', '@OUTPUT@', '@INPUT@']
 )
 
-slghscan_cc = lex.process('slghscan.l')
+generated_sources = declare_dependency(
+    sources: [
+        grammar_cc,
+        xml_cc,
+        pcodeparse_cc,
+        slghparse_cc,
+        slghparse_hh,
+        ruleparse_cc,
+        ruleparse_hh,
+        slghscan_cc
+    ]
+)
 
-grammar_cc = yacc.process(ghidra_decompile_cpp_dir / 'grammar.y', extra_args: ['-p', 'cparse'])
-xml_cc = yacc.process(ghidra_decompile_cpp_dir / 'xml.y', extra_args: ['-p', 'xml'])
-pcodeparse_cc = yacc.process(ghidra_decompile_cpp_dir / 'pcodeparse.y', extra_args: ['-p', 'pcode'])
-slghparse_cc = yacc.process(ghidra_decompile_cpp_dir / 'slghparse.y', extra_args: ['-d'])
-ruleparse_cc = yacc.process(ghidra_decompile_cpp_dir / 'ruleparse.y', extra_args: ['-p', 'ruleparse', '-d'])
+# End generated sources
+
+ghidra_inc = include_directories(ghidra_decompile_cpp_dir)
 
 core_src = [
     # ghidra_decompile_cpp_dir / 'xml.cc',
@@ -107,13 +160,13 @@ sleigh_src = [
     ghidra_decompile_cpp_dir / 'sleigh.cc',
     # ghidra_decompile_cpp_dir / 'pcodeparse.cc',
     pcodeparse_cc,
-    ghidra_decompile_cpp_dir / 'pcodedecompile.cc',
+    ghidra_decompile_cpp_dir / 'pcodecompile.cc',
     ghidra_decompile_cpp_dir / 'sleighbase.cc',
     ghidra_decompile_cpp_dir / 'slghsymbol.cc',
     ghidra_decompile_cpp_dir / 'slghpatexpress.cc',
     ghidra_decompile_cpp_dir / 'slghpattern.cc',
     ghidra_decompile_cpp_dir / 'semantics.cc',
-    ghidra_decompile_cpp_dir / 'context.cc'
+    ghidra_decompile_cpp_dir / 'context.cc',
     ghidra_decompile_cpp_dir / 'filemanage.cc',
 ]
 
@@ -167,8 +220,9 @@ extra_src = [
 ]
 
 
-sleighcc = executable(
+sleigh = executable(
     'sleighcc',
     core_src + sleigh_src + sleigh_compiler_src,
     include_directories: [ghidra_decompile_cpp_dir],
+    c_args: ['-Wno-sign-compare']
 )
