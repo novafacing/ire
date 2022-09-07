@@ -10,6 +10,8 @@ if not fs.is_dir(ghidra_decompile_cpp_dir)
   error('Ghidra decompile C++ directory not found. Run `git submodule update --init --recursive` to fetch it.')
 endif
 
+libbfd = meson.get_compiler('cpp').find_library('bfd')
+
 # Generated Sources - Scanner & Lexer Files
 
 flex = find_program('flex', required: true)
@@ -219,10 +221,30 @@ extra_src = [
     ghidra_decompile_cpp_dir / 'xml_arch.cc'
 ]
 
+libsla_src = [
+    ghidra_decompile_cpp_dir / 'loadimage.cc',
+    ghidra_decompile_cpp_dir / 'sleigh.cc',
+    ghidra_decompile_cpp_dir / 'memstate.cc',
+    ghidra_decompile_cpp_dir / 'emulate.cc',
+    ghidra_decompile_cpp_dir / 'opbehavior.cc',
+]
+
 
 sleigh = executable(
-    'sleighcc',
+    'sleigh',
     core_src + sleigh_src + sleigh_compiler_src,
+    include_directories: [ghidra_decompile_cpp_dir]
+)
+
+libsleigh = library(
+    'sleigh',
+    core_src + sleigh_src + libsla_src,
+    include_directories: [ghidra_decompile_cpp_dir]
+)
+
+libdecomp = library(
+    'decomp',
+    core_src + dec_core_src + extra_src + sleigh_src,
     include_directories: [ghidra_decompile_cpp_dir],
-    c_args: ['-Wno-sign-compare']
+    dependencies: libbfd
 )
