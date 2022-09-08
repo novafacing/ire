@@ -280,6 +280,7 @@ fn main() {
         .opaque_type("std::.*")
         .opaque_type("pointer")
         .enable_cxx_namespaces()
+        .module_raw_line("root", "pub type const_pointer = u64;")
         .generate()
         .expect("Unable to generate ghidra bindings.");
     let bindings_src = PathBuf::from(env::var("OUT_DIR").unwrap()).join("ghidra_bindings.rs");
