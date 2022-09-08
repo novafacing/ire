@@ -283,7 +283,9 @@ fn main() {
         .module_raw_line("root", "pub type const_pointer = u64;")
         .generate()
         .expect("Unable to generate ghidra bindings.");
+
     let bindings_src = PathBuf::from(env::var("OUT_DIR").unwrap()).join("ghidra_bindings.rs");
+
     bindings
         .write_to_file(bindings_src)
         .expect("Could not generate bindings file.");
