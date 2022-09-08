@@ -48,40 +48,43 @@ pcodeparse_cc = custom_target(
     input: ghidra_decompile_cpp_dir / 'pcodeparse.y',
     command: [bison, '-p', 'pcode', '-o' , 'pcodeparse.cc', '@INPUT@']
 )
-slghparse_cc_hh = custom_target(
-    'slghparse_cc_hh',
-    output: [
-        'slghparse.cc',
-        'slghparse.hh'
-    ],
+
+slghparse_cc = custom_target(
+    'slghparse_cc',
+    output: 'slghparse.cc',
     input: ghidra_decompile_cpp_dir / 'slghparse.y',
     command: [bison, '-d', '-o' , 'slghparse.cc', '@INPUT@']
 )
-# 0 is the CC file, 1 is the HH file
-# meson generates them as an array if there are multiple outputs
-slghparse_cc = slghparse_cc_hh[0]
-slghparse_hh = slghparse_cc_hh[1]
 
-ruleparse_cc_hh = custom_target(
-    'ruleparse_cc_hh',
-    output: [
-        'ruleparse.cc',
-        'ruleparse.hh'
-    ],
+slghparse_hh = custom_target(
+    'slghparse_hh',
+    output: 'slghparse.hh',
+    input: ghidra_decompile_cpp_dir / 'slghparse.y',
+    command: [bison, '-d', '-o' , 'slghparse.cc', '@INPUT@'],
+    install_dir: install_path / 'include',
+    install: true
+)
+
+ruleparse_cc = custom_target(
+    'ruleparse_cc',
+    output: 'ruleparse.cc',
     input: ghidra_decompile_cpp_dir / 'ruleparse.y',
     command: [bison, '-p', 'ruleparse', '-d' , '-o' , 'ruleparse.cc', '@INPUT@']
 )
-# 0 is the CC file, 1 is the HH file
-# meson generates them as an array if there are multiple outputs
-ruleparse_cc = ruleparse_cc_hh[0]
-ruleparse_hh = ruleparse_cc_hh[1]
+
+ruleparse_hh = custom_target(
+    'ruleparse_hh',
+    output: 'ruleparse.hh',
+    input: ghidra_decompile_cpp_dir / 'ruleparse.y',
+    command: [bison, '-p', 'ruleparse', '-d' , '-o' , 'ruleparse.cc', '@INPUT@']
+)
 
 slghscan_cc = custom_target(
     'slghscan_cc',
     output: 'slghscan.cc',
     input: ghidra_decompile_cpp_dir / 'slghscan.l',
     command: [flex, '-o', '@OUTPUT@', '@INPUT@'],
-    depends: [slghparse_cc_hh]
+    depends: [slghparse_cc, slghparse_hh]
 )
 
 generated_sources = declare_dependency(
@@ -244,11 +247,120 @@ libsla_src = [
     ghidra_decompile_cpp_dir / 'opbehavior.cc',
 ]
 
+install_headers(
+    ghidra_decompile_cpp_dir / 'action.hh',
+    ghidra_decompile_cpp_dir / 'address.hh',
+    ghidra_decompile_cpp_dir / 'architecture.hh',
+    ghidra_decompile_cpp_dir / 'bfd_arch.hh',
+    ghidra_decompile_cpp_dir / 'blockaction.hh',
+    ghidra_decompile_cpp_dir / 'block.hh',
+    ghidra_decompile_cpp_dir / 'callgraph.hh',
+    ghidra_decompile_cpp_dir / 'capability.hh',
+    ghidra_decompile_cpp_dir / 'cast.hh',
+    ghidra_decompile_cpp_dir / 'codedata.hh',
+    ghidra_decompile_cpp_dir / 'comment_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'comment.hh',
+    ghidra_decompile_cpp_dir / 'condexe.hh',
+    ghidra_decompile_cpp_dir / 'context.hh',
+    ghidra_decompile_cpp_dir / 'coreaction.hh',
+    ghidra_decompile_cpp_dir / 'cover.hh',
+    ghidra_decompile_cpp_dir / 'cpool_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'cpool.hh',
+    ghidra_decompile_cpp_dir / 'crc32.hh',
+    ghidra_decompile_cpp_dir / 'database_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'database.hh',
+    ghidra_decompile_cpp_dir / 'doccore.hh',
+    ghidra_decompile_cpp_dir / 'docmain.hh',
+    ghidra_decompile_cpp_dir / 'double.hh',
+    ghidra_decompile_cpp_dir / 'dynamic.hh',
+    ghidra_decompile_cpp_dir / 'emulate.hh',
+    ghidra_decompile_cpp_dir / 'emulateutil.hh',
+    ghidra_decompile_cpp_dir / 'error.hh',
+    ghidra_decompile_cpp_dir / 'filemanage.hh',
+    ghidra_decompile_cpp_dir / 'float.hh',
+    ghidra_decompile_cpp_dir / 'flow.hh',
+    ghidra_decompile_cpp_dir / 'fspec.hh',
+    ghidra_decompile_cpp_dir / 'funcdata.hh',
+    ghidra_decompile_cpp_dir / 'ghidra_arch.hh',
+    ghidra_decompile_cpp_dir / 'ghidra_context.hh',
+    ghidra_decompile_cpp_dir / 'ghidra_process.hh',
+    ghidra_decompile_cpp_dir / 'ghidra_translate.hh',
+    ghidra_decompile_cpp_dir / 'globalcontext.hh',
+    ghidra_decompile_cpp_dir / 'grammar.hh',
+    ghidra_decompile_cpp_dir / 'graph.hh',
+    ghidra_decompile_cpp_dir / 'heritage.hh',
+    ghidra_decompile_cpp_dir / 'ifacedecomp.hh',
+    ghidra_decompile_cpp_dir / 'ifaceterm.hh',
+    ghidra_decompile_cpp_dir / 'inject_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'inject_sleigh.hh',
+    ghidra_decompile_cpp_dir / 'interface.hh',
+    ghidra_decompile_cpp_dir / 'jumptable.hh',
+    ghidra_decompile_cpp_dir / 'libdecomp.hh',
+    ghidra_decompile_cpp_dir / 'loadimage_bfd.hh',
+    ghidra_decompile_cpp_dir / 'loadimage_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'loadimage.hh',
+    ghidra_decompile_cpp_dir / 'loadimage_xml.hh',
+    ghidra_decompile_cpp_dir / 'marshal.hh',
+    ghidra_decompile_cpp_dir / 'memstate.hh',
+    ghidra_decompile_cpp_dir / 'merge.hh',
+    ghidra_decompile_cpp_dir / 'opbehavior.hh',
+    ghidra_decompile_cpp_dir / 'opcodes.hh',
+    ghidra_decompile_cpp_dir / 'op.hh',
+    ghidra_decompile_cpp_dir / 'options.hh',
+    ghidra_decompile_cpp_dir / 'override.hh',
+    ghidra_decompile_cpp_dir / 'paramid.hh',
+    ghidra_decompile_cpp_dir / 'partmap.hh',
+    ghidra_decompile_cpp_dir / 'pcodecompile.hh',
+    ghidra_decompile_cpp_dir / 'pcodeinject.hh',
+    ghidra_decompile_cpp_dir / 'pcodeparse.hh',
+    ghidra_decompile_cpp_dir / 'pcoderaw.hh',
+    ghidra_decompile_cpp_dir / 'prefersplit.hh',
+    ghidra_decompile_cpp_dir / 'prettyprint.hh',
+    ghidra_decompile_cpp_dir / 'printc.hh',
+    ghidra_decompile_cpp_dir / 'printjava.hh',
+    ghidra_decompile_cpp_dir / 'printlanguage.hh',
+    ghidra_decompile_cpp_dir / 'rangemap.hh',
+    ghidra_decompile_cpp_dir / 'rangeutil.hh',
+    ghidra_decompile_cpp_dir / 'raw_arch.hh',
+    ghidra_decompile_cpp_dir / 'ruleaction.hh',
+    ghidra_decompile_cpp_dir / 'rulecompile.hh',
+    ghidra_decompile_cpp_dir / 'semantics.hh',
+    ghidra_decompile_cpp_dir / 'sleigh_arch.hh',
+    ghidra_decompile_cpp_dir / 'sleighbase.hh',
+    ghidra_decompile_cpp_dir / 'sleigh.hh',
+    ghidra_decompile_cpp_dir / 'slgh_compile.hh',
+    ghidra_decompile_cpp_dir / 'slghparse.hh',
+    ghidra_decompile_cpp_dir / 'slghpatexpress.hh',
+    ghidra_decompile_cpp_dir / 'slghpattern.hh',
+    ghidra_decompile_cpp_dir / 'slghsymbol.hh',
+    ghidra_decompile_cpp_dir / 'space.hh',
+    ghidra_decompile_cpp_dir / 'string_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'stringmanage.hh',
+    ghidra_decompile_cpp_dir / 'subflow.hh',
+    ghidra_decompile_cpp_dir / 'testfunction.hh',
+    ghidra_decompile_cpp_dir / 'test.hh',
+    ghidra_decompile_cpp_dir / 'transform.hh',
+    ghidra_decompile_cpp_dir / 'translate.hh',
+    ghidra_decompile_cpp_dir / 'typegrp_ghidra.hh',
+    ghidra_decompile_cpp_dir / 'type.hh',
+    ghidra_decompile_cpp_dir / 'typeop.hh',
+    ghidra_decompile_cpp_dir / 'types.h',
+    ghidra_decompile_cpp_dir / 'unify.hh',
+    ghidra_decompile_cpp_dir / 'unionresolve.hh',
+    ghidra_decompile_cpp_dir / 'userop.hh',
+    ghidra_decompile_cpp_dir / 'variable.hh',
+    ghidra_decompile_cpp_dir / 'varmap.hh',
+    ghidra_decompile_cpp_dir / 'varnode.hh',
+    ghidra_decompile_cpp_dir / 'xml_arch.hh',
+    ghidra_decompile_cpp_dir / 'xml.hh',
+    meson.project_source_root() / 'ghidra-wrap' / 'pcode-rs-wrapper.hh',
+    install_dir: install_path / 'include',
+)
 
 sleigh = executable(
     'sleigh',
     core_src + sleigh_src + sleigh_compiler_src,
-    cpp_args: ['-Wno-sign-compare'],
+    cpp_args: ['-Wno-sign-compare', '-fno-inline-functions'],
     include_directories: [ghidra_decompile_cpp_dir],
     install_dir: install_path / 'bin',
     install: true,
@@ -257,7 +369,7 @@ sleigh = executable(
 libsleigh = library(
     'sleigh',
     core_src + sleigh_src + libsla_src,
-    cpp_args: ['-Wno-sign-compare'],
+    cpp_args: ['-Wno-sign-compare', '-fno-inline-functions'],
     include_directories: [ghidra_decompile_cpp_dir],
     install_dir: install_path / 'lib',
     install: true,
@@ -266,7 +378,7 @@ libsleigh = library(
 libdecomp = library(
     'decomp',
     core_src + dec_core_src + extra_src + sleigh_src,
-    cpp_args: ['-Wno-sign-compare'],
+    cpp_args: ['-Wno-sign-compare', '-fno-inline-functions'],
     include_directories: [ghidra_decompile_cpp_dir],
     dependencies: libbfd,
     install_dir: install_path / 'lib',
