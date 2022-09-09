@@ -284,10 +284,14 @@ fn main() {
         .allowlist_type("BlockVarnode")
         .allowlist_type("Merge")
         .allowlist_type("ParamMeasure")
+        /* Some types must be denied or replaced */
         .blocklist_type("const_pointer")
         .opaque_type("std::.*")
         .opaque_type("pointer")
         .enable_cxx_namespaces()
+        /* Some types must explicitly be enabled */
+        .allowlist_type("ContextInternal")
+        /* Emit line for blocklisted const_pointer type */
         .module_raw_line("root", "pub type const_pointer = u64;")
         .generate()
         .expect("Unable to generate ghidra bindings.");
