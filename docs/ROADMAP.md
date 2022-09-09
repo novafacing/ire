@@ -20,23 +20,38 @@
   - [ ] Lifting to IR
   - [ ] Control Flow Graph
   - [ ] Data Flow Graph
-  - [ ] Program Dependence Graph
-  - [ ] Control Dependence Graph
-  - [ ] Dominators
   - [ ] Liveness analysis
   - [ ] Use/def chains
   - [ ] Reaching definitions analysis
   - [ ] Static pointer analysis
+  - [ ] Indirect Jump Resolution
+  - [ ] Dominators
+  - [ ] Program Dependence Graph
+  - [ ] Control Dependence Graph
   - [ ] Interprocedural callgraph
   - [ ] Code construct identification
   - [ ] Forward and backward slicing
   - [ ] Calling convention analysis/prototype recovery
-  - [ ] Local and global type recovery
-  - [ ] Indirect Jump Resolution
-  - [ ] Binary Diffing
   - [ ] Variable recovery
+  - [ ] Local and global type recovery
   - [ ] Decompilation
   - [ ] Value-flow graph
+  - [ ] Abstract Interpretation
+  - [ ] Static symbolic execution
+  - [ ] Veritesting
+  - [ ] Affine relationship analysis
+- [ ] Dynamic analysis:
+  - [ ] Exhaustive state configuration
+    - [ ] Filesystem
+    - [ ] rootfs
+    - [ ] inputs/output
+  - [ ] Dynamic symbolic execution
+  - [ ] Concrete emulation
+  - [ ] Debugging
+  - [ ] Dynamic taint tracking
+  - [ ] Fuzzing
+  - [ ] Snapshot capability for all dynamic modes and interface between modes
+  - [ ] Kernel via rootfs emulation
 - [ ] Binary modification and patching
   - [ ] Patches support
   - [ ] Reassembly
@@ -44,6 +59,7 @@
 - [ ] Utility functionality
   - [ ] Serialization of analysis databases
   - [ ] Serialization of dynamic states
+  - [ ] Binary Diffing
 
 ## Prior Art
 
