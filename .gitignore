@@ -47,3 +47,5 @@ Cargo.lock
 *.app
 
 builddir
+ghidra-build
+output
