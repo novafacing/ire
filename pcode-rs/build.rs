@@ -47,7 +47,15 @@ fn main() {
     let bindings = bindgen::Builder::default()
         .header(ghidra_wrapper_path.clone())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
-        .clang_args(&["-std=c++11", "-I", ghidra_include_path, "-x", "c++"])
+        .clang_args(&[
+            "-std=c++11",
+            "-I",
+            ghidra_include_path,
+            "-x",
+            "c++",
+            "-fparse-all-comments",
+            "-fretain-comments-from-system-headers",
+        ])
         .generate_inline_functions(true)
         .dynamic_library_name("decomp")
         .dynamic_library_name("sleigh")

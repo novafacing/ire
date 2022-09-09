@@ -8,6 +8,10 @@ edition = "2021"
 [dependencies]
 libloading = "0.7.3"
 
+[dev-dependencies]
+cc = "1.0.73"
+tempfile = "3.3.0"
+
 [build-dependencies]
 bindgen = "0.60.1"
 libloading = "0.7.3"
