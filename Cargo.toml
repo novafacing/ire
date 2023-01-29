@@ -3,4 +3,5 @@
 members = [
     "pcode-rs", # Rust PCode Bindings
     "ire",      # Rust implementation of angr
+    "iir",      # The IRE IR
 ]
