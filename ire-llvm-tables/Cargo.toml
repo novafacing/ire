@@ -1,0 +1,11 @@
+[package]
+name = "ire-llvm-tables"
+version = "0.1.0"
+edition = "2021"
+
+[build-dependencies]
+reqwest = { version = "*", features = ["blocking"] }
+anyhow = "*"
+xz2 = "*"
+tar = "*"
+cmake = "*"
