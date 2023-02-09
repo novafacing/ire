@@ -5,4 +5,5 @@ members = [
     "ire",              # Rust implementation of angr
     "iir",              # The IRE IR
     "ire-disassembler", # Disassembler for IRE
+    "ire-llvm-tables",  # LLVM tables for IRE
 ]
