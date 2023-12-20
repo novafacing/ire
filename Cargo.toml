@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["tree-sitter-sleigh"]
+
+[workspace.dependencies]
+tree-sitter-sleigh = { path = "tree-sitter-sleigh" }
+typed-builder = "0.18.0"
+malachite = { version = "0.4.1", features = ["serde"] }
+paste = "1.0.14"
+quote = "1.0.33"
+regex = "1.9.5"
